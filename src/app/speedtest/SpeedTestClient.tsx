@@ -15,6 +15,25 @@ function fmt(n: number) {
   return n.toFixed(1);
 }
 
+function quantile(sorted: number[], q: number) {
+  if (!sorted.length) return null;
+  const clamped = Math.min(1, Math.max(0, q));
+  const idx = Math.floor(clamped * (sorted.length - 1));
+  return sorted[idx] ?? null;
+}
+
+function summarize(series: number[]) {
+  if (!series.length) return null;
+  const finite = series.filter((v) => Number.isFinite(v) && v >= 0);
+  if (!finite.length) return null;
+  const sorted = [...finite].sort((a, b) => a - b);
+  const min = sorted[0] ?? 0;
+  const max = sorted[sorted.length - 1] ?? 0;
+  const median = quantile(sorted, 0.5) ?? 0;
+  const p95 = quantile(sorted, 0.95) ?? 0;
+  return { min, max, median, p95, n: sorted.length };
+}
+
 export default function SpeedTestClient() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string>("");
@@ -133,9 +152,11 @@ export default function SpeedTestClient() {
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Panel title="Download stability (Mbps)">
           <Sparkline series={downloadSeries} />
+          <SeriesStats series={downloadSeries} />
         </Panel>
         <Panel title="Upload stability (Mbps)">
           <Sparkline series={uploadSeries} />
+          <SeriesStats series={uploadSeries} />
         </Panel>
       </section>
     </div>
@@ -184,6 +205,21 @@ function Sparkline({ series }: { series: number[] }) {
           title={`${fmt(v)} Mbps`}
         />
       ))}
+    </div>
+  );
+}
+
+function SeriesStats({ series }: { series: number[] }) {
+  const s = summarize(series);
+  if (!s) return null;
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/60">
+      <span className="font-mono">n={s.n}</span>
+      <span className="font-mono">median {fmt(s.median)}</span>
+      <span className="font-mono">p95 {fmt(s.p95)}</span>
+      <span className="font-mono">
+        range {fmt(s.min)}-{fmt(s.max)}
+      </span>
     </div>
   );
 }
@@ -318,4 +354,3 @@ async function measureUpload(opts: {
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
-
