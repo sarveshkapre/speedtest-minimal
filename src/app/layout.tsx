@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Network Reactor",
-  description: "Minimal, modern internet diagnostics: page load, IP metadata, BGP/ASN, and speed tests.",
+  title: "Speedtest Minimal",
+  description: "Browser-first speed test with stability view and safe upload limits.",
 };
 
 export default function RootLayout({
@@ -40,15 +40,6 @@ export default function RootLayout({
                 </span>
               </Link>
               <nav className="hidden items-center gap-2 text-sm md:flex">
-                <Link href="/page-load" className="rounded-full px-3 py-1 text-white/70 hover:bg-white/10 hover:text-white">
-                  Page Load
-                </Link>
-                <Link href="/my-ip" className="rounded-full px-3 py-1 text-white/70 hover:bg-white/10 hover:text-white">
-                  My IP
-                </Link>
-                <Link href="/bgp" className="rounded-full px-3 py-1 text-white/70 hover:bg-white/10 hover:text-white">
-                  BGP
-                </Link>
                 <Link href="/speedtest" className="rounded-full px-3 py-1 text-white/70 hover:bg-white/10 hover:text-white">
                   Speed Test
                 </Link>
