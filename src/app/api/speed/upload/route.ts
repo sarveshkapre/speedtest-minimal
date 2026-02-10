@@ -1,12 +1,24 @@
 import { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
-  const maxBytes = 128 * 1024 * 1024;
-  const contentLength = Number(req.headers.get("content-length") ?? "0");
+  // Keep per-request uploads capped to reduce abuse risk and avoid memory pressure.
+  const maxBytes = 8 * 1024 * 1024;
+  const contentLength = Number(req.headers.get("content-length") ?? "NaN");
   if (Number.isFinite(contentLength) && contentLength > maxBytes) {
-    return Response.json({ ok: false, error: "payload too large" }, { status: 413 });
+    return Response.json(
+      { ok: false, error: "payload too large" },
+      {
+        status: 413,
+        headers: {
+          "cache-control": "no-store, no-cache, must-revalidate",
+          pragma: "no-cache",
+          "x-max-bytes": String(maxBytes),
+        },
+      },
+    );
   }
 
   const body = req.body;
@@ -21,7 +33,18 @@ export async function POST(req: NextRequest) {
     if (done) break;
     total += value?.byteLength ?? 0;
     if (total > maxBytes) {
-      return Response.json({ ok: false, error: "payload too large" }, { status: 413 });
+      await reader.cancel("payload too large");
+      return Response.json(
+        { ok: false, error: "payload too large" },
+        {
+          status: 413,
+          headers: {
+            "cache-control": "no-store, no-cache, must-revalidate",
+            pragma: "no-cache",
+            "x-max-bytes": String(maxBytes),
+          },
+        },
+      );
     }
   }
 
@@ -29,6 +52,6 @@ export async function POST(req: NextRequest) {
     ok: true,
     bytesReceived: total,
     iso: new Date().toISOString(),
+    maxBytes,
   });
 }
-
