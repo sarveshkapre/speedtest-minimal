@@ -8,16 +8,17 @@
 
 ## Candidate Features To Do
 
-- [ ] Fix broken navigation by adding `/speedtest` route (alias of current speed test UI) and removing/hiding links to non-existent pages.
-- [ ] Enforce safe server-side limits for test endpoints (upload max bytes, download max MB, strict validation, and no-store headers).
-- [ ] Improve download payload generation to reduce compression/CPU artifacts (fast pseudo-random stream instead of repeating text seed).
-- [ ] Add stability summary stats (median/p95 + min/max) alongside sparklines to better explain variability.
 - [ ] Add warmup/sustained phases for throughput (discard warmup samples; report sustained throughput + stability percentiles).
 - [ ] Add “loaded vs unloaded” latency view (ping during idle and during active download/upload; report delta).
 - [ ] Add packet loss metric (best-effort UDP-like approximation is hard in browser; may need server support and careful wording).
-- [ ] Add GitHub Actions CI for `npm ci`, `npm run lint`, `npm run build` to surface regressions early.
 
 ## Implemented
+
+- [x] 2026-02-10: Add `/speedtest` route alias and remove broken nav links. Evidence: `src/app/speedtest/page.tsx`, `src/app/layout.tsx`.
+- [x] 2026-02-10: Tighten endpoint safety limits (upload cap 8 MiB; download cap 32 MiB; no-store headers). Evidence: `src/app/api/speed/upload/route.ts`, `src/app/api/speed/download/route.ts`.
+- [x] 2026-02-10: Improve download payload generator to reduce compressibility artifacts. Evidence: `src/app/api/speed/download/route.ts`.
+- [x] 2026-02-10: Add stability summary stats (median/p95/range + sample count). Evidence: `src/app/speedtest/SpeedTestClient.tsx`.
+- [x] 2026-02-10: Add GitHub Actions CI for `npm ci`, `npm run lint`, `npm run build`. Evidence: `.github/workflows/ci.yml` (Actions run success).
 
 ## Insights
 

@@ -10,3 +10,5 @@ See `plan.md` for the full spec and roadmap.
 npm install
 npm run dev
 ```
+
+Open `http://localhost:3000/speedtest` (or `/`).
