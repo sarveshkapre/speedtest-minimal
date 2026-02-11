@@ -65,10 +65,11 @@
 - 2026-02-11 | npm run build | compiled successfully; routes include `/speedtest` and `/api/speed/*` | pass
 - 2026-02-11 | npm run dev -- -p 3003 | dev server started; endpoints reachable | pass
 - 2026-02-11 | curl -i -sS http://localhost:3003/api/speed/ping | HTTP 200 + `cache-control: no-store` | pass
-- 2026-02-11 | curl -i -sS \"http://localhost:3003/api/speed/download?mb=1\" | HTTP 200 + `content-length: 1048576` + `x-max-mb: 32` | pass
+- 2026-02-11 | curl -i -sS "http://localhost:3003/api/speed/download?mb=1" | HTTP 200 + `content-length: 1048576` + `x-max-mb: 32` | pass
 - 2026-02-11 | head -c 1048576 /dev/urandom | curl -i -sS -X POST http://localhost:3003/api/speed/upload --data-binary @- | HTTP 200 + `x-max-bytes: 8388608` | pass
 - 2026-02-11 | head -c $((9*1024*1024)) /dev/urandom | curl -i -sS -X POST http://localhost:3003/api/speed/upload --data-binary @- | HTTP 413 + `x-max-bytes: 8388608` | pass
 - 2026-02-11 | gh run view 21893767244 --repo sarveshkapre/speedtest-minimal --json status,conclusion | completed + success | pass
+- 2026-02-11 | gh run view 21893800872 --repo sarveshkapre/speedtest-minimal --json status,conclusion | completed + success | pass
 
 ## Historical Summary
 - Keep compact summaries of older entries here when file compaction runs.
