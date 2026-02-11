@@ -78,10 +78,12 @@
 - 2026-02-11 | gh run view 21893767244 --repo sarveshkapre/speedtest-minimal --json status,conclusion | completed + success | pass
 - 2026-02-11 | gh run view 21893800872 --repo sarveshkapre/speedtest-minimal --json status,conclusion | completed + success | pass
 - 2026-02-11 | gh issue list --repo sarveshkapre/speedtest-minimal --state open --limit 100 --json number,title,author,labels,url | `[]` (no open owner/bot issues) | pass
-- 2026-02-11 | gh run list --repo sarveshkapre/speedtest-minimal --limit 20 --json databaseId,headSha,status,conclusion,name,workflowName,createdAt,url | recent runs completed success pre-change; new run queued for `5985af7` | pass
+- 2026-02-11 | gh run list --repo sarveshkapre/speedtest-minimal --limit 20 --json databaseId,headSha,status,conclusion,name,workflowName,createdAt,url | showed latest CI runs and queued run after push | pass
 - 2026-02-11 | npm run lint | exit 0 | pass
 - 2026-02-11 | npm run build | compiled successfully; routes include `/api/speed/server` | pass
 - 2026-02-11 | npm run smoke:api | ping/download/upload checks passed including 413 oversized upload path | pass
+- 2026-02-11 | gh run view 21893981034 --repo sarveshkapre/speedtest-minimal --json status,conclusion,url,headSha | completed + success for `5985af7` | pass
+- 2026-02-11 | gh run view 21893995795 --repo sarveshkapre/speedtest-minimal --json status,conclusion,url,headSha | completed + success for `fb63638` | pass
 
 ## Historical Summary
 - Keep compact summaries of older entries here when file compaction runs.
