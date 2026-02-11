@@ -3,27 +3,33 @@ import { NextRequest } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const maxBytes = 8 * 1024 * 1024;
+
+const noStoreHeaders = {
+  "cache-control": "no-store, no-cache, must-revalidate",
+  pragma: "no-cache",
+  "x-max-bytes": String(maxBytes),
+};
+
 export async function POST(req: NextRequest) {
   // Keep per-request uploads capped to reduce abuse risk and avoid memory pressure.
-  const maxBytes = 8 * 1024 * 1024;
   const contentLength = Number(req.headers.get("content-length") ?? "NaN");
   if (Number.isFinite(contentLength) && contentLength > maxBytes) {
     return Response.json(
       { ok: false, error: "payload too large" },
       {
         status: 413,
-        headers: {
-          "cache-control": "no-store, no-cache, must-revalidate",
-          pragma: "no-cache",
-          "x-max-bytes": String(maxBytes),
-        },
+        headers: noStoreHeaders,
       },
     );
   }
 
   const body = req.body;
   if (!body) {
-    return Response.json({ ok: false, error: "missing body" }, { status: 400 });
+    return Response.json(
+      { ok: false, error: "missing body" },
+      { status: 400, headers: noStoreHeaders },
+    );
   }
 
   const reader = body.getReader();
@@ -38,20 +44,19 @@ export async function POST(req: NextRequest) {
         { ok: false, error: "payload too large" },
         {
           status: 413,
-          headers: {
-            "cache-control": "no-store, no-cache, must-revalidate",
-            pragma: "no-cache",
-            "x-max-bytes": String(maxBytes),
-          },
+          headers: noStoreHeaders,
         },
       );
     }
   }
 
-  return Response.json({
-    ok: true,
-    bytesReceived: total,
-    iso: new Date().toISOString(),
-    maxBytes,
-  });
+  return Response.json(
+    {
+      ok: true,
+      bytesReceived: total,
+      iso: new Date().toISOString(),
+      maxBytes,
+    },
+    { headers: noStoreHeaders },
+  );
 }
