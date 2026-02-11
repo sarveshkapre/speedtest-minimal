@@ -9,15 +9,17 @@
 - Throughput measured client-side via `fetch()` with warmup-discarded sustained windows:
   - Download: parallel streams reading `/api/speed/download`, 2s warmup + 7s sustained window.
   - Upload: parallel POSTs to `/api/speed/upload`, 2s warmup + 7s sustained window.
+- Download and upload loops now enforce client-side byte budgets per run to keep usage bounded.
 - Latency/jitter/loss:
   - Idle: repeated GETs to `/api/speed/ping`.
   - Loaded: concurrent ping sampling during active download/upload.
+- UI includes server identity metadata (`/api/speed/server`), confidence grades, and JSON export for completed runs.
 
 ## Open Problems
 
 - Packet loss remains best-effort HTTP ping loss, not true UDP packet-loss measurement.
-- No confidence-grade model yet (sample count + variance scoring).
 - No adaptive concurrency ramp for low-end device reliability.
+- Confidence grading is heuristic and currently uncalibrated against controlled ground truth.
 
 ## Recent Decisions
 - Template: YYYY-MM-DD | Decision | Why | Evidence (tests/logs) | Commit | Confidence (high/medium/low) | Trust (trusted/untrusted)
@@ -31,6 +33,11 @@
 - 2026-02-11 | Add loaded-latency deltas and packet-loss counters (idle + loaded phases) | Improves congestion visibility and surfaces reliability degradation during throughput | `npm run build`; local manual UI/API smoke checks | acd126d | medium | trusted
 - 2026-02-11 | Add run cancellation with request abort registry | Prevents hung/stale runs and improves resilience on flaky networks | `npm run lint`; cancel path aborts active controllers | acd126d | high | trusted
 - 2026-02-11 | Standardize upload `no-store` + `x-max-bytes` response headers across success/error paths | Keeps safety metadata predictable and cache behavior consistent | local curl smoke shows headers for 200 and 413 responses | acd126d | high | trusted
+- 2026-02-11 | Add confidence grading for latency/loss and throughput stability metrics | Reduces over-trust of noisy measurements and makes reliability explicit in UI | `npm run build`; confidence badges render for idle/loaded/throughput metrics | 5985af7 | medium | trusted
+- 2026-02-11 | Add explicit per-run data-usage estimator + actual usage reporting with client-side byte budgets | Makes data cost clear to users and constrains transfer usage in browser loops | `npm run smoke:api`; UI shows estimated max plus measured usage after run | 5985af7 | high | trusted
+- 2026-02-11 | Add `/api/speed/server` metadata endpoint and show server identity in UI | Improves diagnostic context and supports reproducible result sharing | `npm run build` shows `/api/speed/server`; UI metadata card renders | 5985af7 | high | trusted
+- 2026-02-11 | Add JSON export for completed runs and ARIA live phase announcements | Improves accessibility and operator workflow for sharing/debugging results | local manual UI check; `npm run lint` | 5985af7 | medium | trusted
+- 2026-02-11 | Add one-command API smoke script (`npm run smoke:api`) | Makes route regression checks repeatable for local and CI-like runs | `npm run smoke:api` verifies ping/download/upload success and oversize rejection | 5985af7 | high | trusted
 
 ## Mistakes And Fixes
 - Template: YYYY-MM-DD | Issue | Root cause | Fix | Prevention rule | Commit | Confidence
@@ -42,9 +49,9 @@
 
 ## Next Prioritized Tasks
 
-- 2026-02-11 | Add confidence grading for metrics based on sample count + variance | Impact: high | Effort: medium | Risk: low | Confidence: medium | Trust: trusted
-- 2026-02-11 | Add adaptive concurrency ramp for weak devices | Impact: medium | Effort: medium/high | Risk: medium | Confidence: medium | Trust: trusted
-- 2026-02-11 | Add data-usage estimator before run start | Impact: medium | Effort: low/medium | Risk: low | Confidence: high | Trust: trusted
+- 2026-02-11 | Add adaptive concurrency ramp for weak devices | Impact: high | Effort: medium/high | Risk: medium | Confidence: medium | Trust: trusted
+- 2026-02-11 | Extract and test stats helpers (quantile/median/jitter/summary edge cases) | Impact: high | Effort: medium | Risk: low | Confidence: high | Trust: trusted
+- 2026-02-11 | Add methodology drawer documenting confidence rubric and single-server limitations | Impact: medium | Effort: low/medium | Risk: low | Confidence: high | Trust: trusted
 
 ## Verification Evidence
 - Template: YYYY-MM-DD | Command | Key output | Status (pass/fail)
@@ -70,6 +77,11 @@
 - 2026-02-11 | head -c $((9*1024*1024)) /dev/urandom | curl -i -sS -X POST http://localhost:3003/api/speed/upload --data-binary @- | HTTP 413 + `x-max-bytes: 8388608` | pass
 - 2026-02-11 | gh run view 21893767244 --repo sarveshkapre/speedtest-minimal --json status,conclusion | completed + success | pass
 - 2026-02-11 | gh run view 21893800872 --repo sarveshkapre/speedtest-minimal --json status,conclusion | completed + success | pass
+- 2026-02-11 | gh issue list --repo sarveshkapre/speedtest-minimal --state open --limit 100 --json number,title,author,labels,url | `[]` (no open owner/bot issues) | pass
+- 2026-02-11 | gh run list --repo sarveshkapre/speedtest-minimal --limit 20 --json databaseId,headSha,status,conclusion,name,workflowName,createdAt,url | recent runs completed success pre-change; new run queued for `5985af7` | pass
+- 2026-02-11 | npm run lint | exit 0 | pass
+- 2026-02-11 | npm run build | compiled successfully; routes include `/api/speed/server` | pass
+- 2026-02-11 | npm run smoke:api | ping/download/upload checks passed including 413 oversized upload path | pass
 
 ## Historical Summary
 - Keep compact summaries of older entries here when file compaction runs.
